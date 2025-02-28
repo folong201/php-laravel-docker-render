@@ -1,20 +1,20 @@
-FROM richarvey/nginx-php-fpm:3.1.6
+# Utiliser l'image officielle PHP avec Apache
+FROM php:8.2-apache
 
-COPY . .
+# Installer les extensions PHP nécessaires
+RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Image config
-ENV SKIP_COMPOSER 1
-ENV WEBROOT /var/www/html/public
-ENV PHP_ERRORS_STDERR 1
-ENV RUN_SCRIPTS 1
-ENV REAL_IP_HEADER 1
+# Activer mod_rewrite pour Apache
+RUN a2enmod rewrite
 
-# Laravel config
-ENV APP_ENV production
-ENV APP_DEBUG false
-ENV LOG_CHANNEL stderr
+# Copier le code source de l'application dans le conteneur
+COPY . /var/www/html/
 
-# Allow composer to run as root
-ENV COMPOSER_ALLOW_SUPERUSER 1
+# Donner les bons droits aux fichiers
+RUN chown -R www-data:www-data /var/www/html
 
-CMD ["/start.sh"]
+# Exposer le port 80
+EXPOSE 80
+
+# Lancer Apache en arrière-plan
+CMD ["apache2-foreground"]
